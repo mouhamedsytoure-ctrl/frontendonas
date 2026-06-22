@@ -31,17 +31,8 @@ import { Api, fcfa } from '../../core/api.service';
         @if (photos().length) {
           <div class="ph">@for (p of photos(); track p.id) { <img [src]="p.url" (click)="zoom(p.url)" alt=""/> }</div>
         }
-
-        <!-- Bouton appel propriétaire -->
-        @if (tel(); as t) {
-          <a class="call-btn" [href]="'tel:' + t">
-            <span class="call-ic">📞</span>
-            <span class="call-txt"><span class="call-lbl">Intéressé ? Appelez le propriétaire</span><span class="call-num">{{ t }}</span></span>
-          </a>
-        }
-
         <h2>Logements disponibles</h2>
-        @if (etages().length === 0) { <p class="muted">Aucun logement disponible pour le moment.</p> }
+        @if (etages().length === 0) { <p class="muted">Aucun logement disponible.</p> }
         @for (e of etages(); track e) {
           <div class="etage">
             <div class="et-t">{{ etageLabel(e) }}</div>
@@ -115,12 +106,6 @@ import { Api, fcfa } from '../../core/api.service';
     .gal img{width:200px;height:140px;object-fit:cover;border-radius:10px;cursor:pointer}
     .zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
     .zoom img{max-width:100%;max-height:100%;border-radius:8px}
-    .call-btn{display:flex;align-items:center;gap:14px;background:var(--gold);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:20px;transition:opacity .2s}
-    .call-btn:hover{opacity:.9}
-    .call-ic{font-size:28px}
-    .call-txt{display:flex;flex-direction:column;gap:2px}
-    .call-lbl{color:var(--ink);font-weight:700;font-size:14px}
-    .call-num{color:var(--ink);font-size:20px;font-weight:800;letter-spacing:.5px}
   `],
 })
 export class VitrineDetail implements OnInit {
@@ -140,11 +125,9 @@ export class VitrineDetail implements OnInit {
   video(): string | null { const m = (this.im()?.medias || []).find((x: any) => x.type === 'video' && x.url); return m?.url || null; }
   photos(): any[] { return (this.im()?.medias || []).filter((x: any) => x.type === 'photo' && x.url); }
   lgPhotos(l: any): any[] { return (l.medias || []).filter((x: any) => x.type === 'photo' && x.url); }
-  disponibles(): any[] { return (this.im()?.logements || []).filter((l: any) => l.statut === 'disponible'); }
-  etages(): number[] { const s = new Set<number>(); this.disponibles().forEach((l: any) => s.add(l.etage ?? 0)); return [...s].sort((a, b) => a - b); }
-  logementsOf(e: number): any[] { return this.disponibles().filter((l: any) => (l.etage ?? 0) === e); }
+  etages(): number[] { const s = new Set<number>(); (this.im()?.logements || []).forEach((l: any) => s.add(l.etage ?? 0)); return [...s].sort((a, b) => a - b); }
+  logementsOf(e: number): any[] { return (this.im()?.logements || []).filter((l: any) => (l.etage ?? 0) === e); }
   etageLabel(e: number) { return e === 0 ? 'Rez-de-chaussée' : (e === 1 ? '1er étage' : e + 'e étage'); }
-  tel(): string | null { return this.im()?.creator?.telephone ?? null; }
   ouvrir(l: any) { this._galTitre = `${l.type} ${l.reference}`; this.gallery.set(this.lgPhotos(l).map((p: any) => p.url)); }
   galTitre() { return this._galTitre; }
   zoom(u: string) { this.big.set(u); }
