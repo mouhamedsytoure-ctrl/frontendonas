@@ -12,15 +12,19 @@ import { AuthService } from '../../core/auth.service';
   standalone: true,
   imports: [RouterLink, FormsModule],
   template: `
+    <!-- Fond vidéo floutée pleine page -->
+    @if (video(); as v) {
+      <video class="bg-video" [src]="v" autoplay muted loop playsinline></video>
+    }
+    <div class="bg-overlay"></div>
+
+    <div class="page-content">
     <a routerLink="/app/immeubles" class="back">← Immeubles</a>
     @if (loading()) { <p class="muted">Chargement...</p> }
     @else if (im(); as m) {
-      <div class="hero">
-        @if (video(); as v) {
-          <video #vid [src]="v" autoplay muted loop playsinline (click)="fs(vid)" style="cursor:pointer"></video>
-          <button class="fsbtn" (click)="fs(vid)" title="Plein écran">⛶</button>
-        } @else { <div class="novid">Pas de vidéo</div> }
-        <div class="hov"><h1>{{ m.nom }}</h1><div class="vl">{{ m.ville }}</div></div>
+      <div class="hero-title">
+        <h1>{{ m.nom }}</h1>
+        <div class="vl">{{ m.ville }}</div>
       </div>
 
       @if (admin()) {
@@ -120,36 +124,53 @@ import { AuthService } from '../../core/auth.service';
       }
       @if (big(); as b) { <div class="zoom" (click)="big.set(null)"><img [src]="b" alt=""/></div> }
     }
+    </div>
   `,
   styles: [`
-    .back{color:var(--ink);text-decoration:none;font-weight:600;display:inline-block;margin-bottom:14px}
-    .muted{color:var(--muted)}
-    .hero{position:relative;height:200px;border-radius:18px;overflow:hidden;background:var(--ink);margin-bottom:14px}
-    .hero video{width:100%;height:100%;object-fit:cover}
-    .novid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9fb3ab;font-size:13px}
-    .hov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.6))}
-    .hov h1{color:#fff;margin:0} .vl{color:#cfe0d9}
-    .fsbtn{position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:8px;width:36px;height:36px;font-size:18px;cursor:pointer}
-    .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+    :host{display:block;position:relative;min-height:100vh}
+    /* --- fond vidéo floutée --- */
+    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(3px);transform:scale(1.04);z-index:0}
+    .bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:1}
+    .page-content{position:relative;z-index:10;padding:24px;max-width:1200px}
+    /* --- titre --- */
+    .hero-title{margin-bottom:18px}
+    .hero-title h1{color:#fff;margin:0 0 4px;font-size:26px;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+    .vl{color:#cfe0d9;font-size:14px}
+    /* --- nav --- */
+    .back{color:#fff;text-decoration:none;font-weight:600;display:inline-block;margin-bottom:14px;opacity:.85}
+    .back:hover{opacity:1}
+    .muted{color:#cfe0d9}
+    /* --- outils upload --- */
+    .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
     .btn{border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer}
-    .btn.ink{background:var(--ink);color:#fff}.btn.gold{background:var(--gold);color:var(--ink)}.btn.sm{padding:6px 10px;font-size:12px}
+    .btn.ink{background:rgba(20,42,36,.85);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.2)}
+    .btn.gold{background:var(--gold);color:var(--ink)}
+    .btn.sm{padding:6px 10px;font-size:12px}
     .btn:disabled{opacity:.6}
-    .upmsg{color:var(--muted);font-size:12px}
-    h3{color:var(--ink);margin:16px 0 10px}
+    .upmsg{color:#cfe0d9;font-size:12px}
+    /* --- photos --- */
+    h3{color:#fff;margin:16px 0 10px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
     .ph{display:flex;gap:10px;flex-wrap:wrap}
     .thumb,.gthumb{position:relative}
     .ph img{width:150px;height:104px;object-fit:cover;border-radius:12px;cursor:pointer}
     .x{position:absolute;top:6px;right:6px;background:rgba(178,58,58,.92);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px}
     .star{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.45);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer}
     .star.on{background:var(--gold);color:var(--ink)}
-    .et{margin-bottom:12px}.ettitle{font-weight:bold;color:var(--ink);margin-bottom:8px}
-    .lg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+    /* --- étages & logements --- */
+    .lgh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+    .addlg{background:var(--gold);color:var(--ink);border:none;border-radius:9px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer}
+    .card.et{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:14px;margin-bottom:12px}
+    .ettitle{font-weight:bold;color:#fff;margin-bottom:8px}
+    .lg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.15)}
     .lg-main{flex:1;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
     .lg-main:hover{opacity:.85}
+    .lg-main span:first-child{color:#fff}
     .lg .r{display:flex;align-items:center;gap:10px}
-    .photos-n{color:var(--muted);font-size:13px}
-    .addph{background:#fff;border:1px solid var(--gold);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+    .photos-n{color:#cfe0d9;font-size:13px}
+    .badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
+    .addph{background:rgba(255,255,255,.15);border:1px solid var(--gold);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+    /* --- modals --- */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
     .sheet{background:#fff;border-radius:14px;max-width:760px;width:100%;max-height:85vh;overflow:auto;padding:18px}
     .sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
     .sheet-h span{display:flex;align-items:center;gap:8px}
@@ -158,8 +179,7 @@ import { AuthService } from '../../core/auth.service';
     .gal img{width:200px;height:140px;object-fit:cover;border-radius:10px;cursor:pointer}
     .zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
     .zoom img{max-width:100%;max-height:100%;border-radius:8px}
-    .lgh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-    .addlg{background:var(--gold);color:var(--ink);border:none;border-radius:9px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer}
+    /* --- formulaire logement --- */
     .lgform{display:flex;flex-direction:column;gap:4px}
     .lgform label{font-size:11px;color:var(--muted);margin-top:6px}
     .lgform input,.lgform select{border:1px solid var(--line);border-radius:9px;padding:10px;font-size:14px;font-family:inherit}
