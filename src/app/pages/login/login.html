@@ -1,0 +1,20 @@
+<div class="login-wrap">
+  <div class="login-card">
+    <a class="logobox" routerLink="/apropos"><img [src]="logo" alt="SITS"/></a>
+    <p class="sub">Espace administration</p>
+
+    <label>Email</label>
+    <input class="input" type="email" [(ngModel)]="email" placeholder="email@exemple.com" />
+
+    <label>Mot de passe</label>
+    <input class="input" type="password" [(ngModel)]="password" (keyup.enter)="submit()" placeholder="********" />
+
+    @if (error()) { <div class="err">{{ error() }}</div> }
+
+    <button class="btn btn-ink full" [disabled]="loading()" (click)="submit()">
+      {{ loading() ? 'Connexion...' : 'Se connecter' }}
+    </button>
+
+    <a class="vitrine-lien" routerLink="/vitrine">Voir les logements disponibles →</a>
+  </div>
+</div>

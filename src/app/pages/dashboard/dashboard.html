@@ -1,0 +1,100 @@
+<h1 class="ptitle">Tableau de bord</h1>
+
+@if (loading()) { <p class="muted">Chargement...</p> }
+@else if (error()) { <div class="card err">{{ error() }}</div> }
+@else if (d(); as s) {
+
+  <!-- Hero encaisse -->
+  <div class="hero">
+    <div>
+      <div class="hlabel">Encaissé ce mois ({{ s.periode }})</div>
+      <div class="hvalue">{{ fcfa(s.encaisse) }} <span>FCFA</span></div>
+      <div class="hsub">Attendu : {{ fcfa(s.attendu) }} FCFA</div>
+    </div>
+    <div class="occ">
+      <div class="occ-num">{{ s.taux_occupation }}%</div>
+      <div class="occ-lbl">Occupation</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid">
+    <div class="card kpi"><div class="kp-ic" style="background:#FBEEDD;color:var(--warn)">⏳</div>
+      <div><div class="kp-val">{{ s.impayes_nombre }}</div><div class="kp-lbl">Impayés ce mois</div><div class="kp-sub">{{ fcfa(s.impayes_montant) }} FCFA</div></div></div>
+    <div class="card kpi"><div class="kp-ic" style="background:#E7F1EC;color:var(--ok)">🏢</div>
+      <div><div class="kp-val">{{ s.nb_immeubles }}</div><div class="kp-lbl">Immeubles</div></div></div>
+    <div class="card kpi"><div class="kp-ic" style="background:#E7F1EC;color:var(--ok)">🏠</div>
+      <div><div class="kp-val">{{ s.logements_loues }}/{{ s.logements_total }}</div><div class="kp-lbl">Logements loués</div></div></div>
+    <div class="card kpi"><div class="kp-ic" style="background:#E7F1EC;color:var(--ink)">👥</div>
+      <div><div class="kp-val">{{ s.nb_locataires }}</div><div class="kp-lbl">Locataires</div></div></div>
+    <div class="card kpi"><div class="kp-ic" style="background:#FBE3E0;color:var(--bad)">🛠</div>
+      <div><div class="kp-val">{{ s.reclamations_ouvertes }}</div><div class="kp-lbl">Réclamations ouvertes</div></div></div>
+  </div>
+
+  <!-- Deux colonnes -->
+  <div class="cols">
+
+    <!-- Loyers en retard -->
+    <div class="card sec">
+      <div class="sec-h"><h3>Loyers en retard ({{ periode }})</h3><a routerLink="/app/loyers">Voir</a></div>
+      @if (retard().length === 0) { <p class="muted2">Aucun retard 🎉</p> }
+      @for (r of retard().slice(0,6); track r.id) {
+        <a class="line" [routerLink]="r.contratId ? ['/app/contrats', r.contratId] : null">
+          <div><div class="l1">{{ r.name }}</div><div class="l2">{{ r.logement }}</div></div>
+          <b class="bad">{{ fcfa(r.loyer) }}</b>
+        </a>
+      }
+    </div>
+
+    <!-- Derniers paiements -->
+    <div class="card sec">
+      <div class="sec-h"><h3>Derniers paiements</h3><a routerLink="/app/loyers">Voir</a></div>
+      @if (paiements().length === 0) { <p class="muted2">Aucun paiement.</p> }
+      @for (p of paiements(); track p.id) {
+        <div class="line">
+          <div><div class="l1">{{ p.contrat?.locataire?.name || '—' }}</div><div class="l2">{{ p.periode }} · {{ p.mode_paiement }}</div></div>
+          <div class="r"><b class="ok">{{ fcfa(p.montant) }}</b><div class="l2">{{ p.recu_numero }}</div></div>
+        </div>
+      }
+    </div>
+
+    <!-- Contrats qui expirent -->
+    <div class="card sec">
+      <div class="sec-h"><h3>Contrats à renouveler</h3><a routerLink="/app/contrats">Voir</a></div>
+      @if (expirent().length === 0) { <p class="muted2">Aucun contrat proche de l'échéance.</p> }
+      @for (c of expirent(); track c.id) {
+        <a class="line" [routerLink]="['/app/contrats', c.id]">
+          <div><div class="l1">{{ nom(c) }}</div><div class="l2">Fin {{ c.date_fin | slice:0:10 }}</div></div>
+          <span class="badge" [style.background]="c.j < 0 ? '#FBE3E0':'#FBEEDD'" [style.color]="c.j < 0 ? 'var(--bad)':'var(--warn)'">
+            {{ c.j < 0 ? 'Expiré' : 'Dans ' + c.j + ' j' }}
+          </span>
+        </a>
+      }
+    </div>
+
+    <!-- Reclamations recentes -->
+    <div class="card sec">
+      <div class="sec-h"><h3>Réclamations récentes</h3><a routerLink="/app/reclamations">Voir</a></div>
+      @if (reclamations().length === 0) { <p class="muted2">Aucune réclamation.</p> }
+      @for (r of reclamations(); track r.id) {
+        <div class="line">
+          <div><div class="l1">{{ r.objet }}</div><div class="l2">{{ r.user?.name || '' }}</div></div>
+          <span class="badge" [style.background]="r.statut==='resolu' ? '#E7F1EC' : (r.statut==='en_cours' ? '#FBEEDD' : '#FBE3E0')"
+                [style.color]="r.statut==='resolu' ? 'var(--ok)' : (r.statut==='en_cours' ? 'var(--warn)' : 'var(--bad)')">{{ r.statut }}</span>
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- Patrimoine -->
+  <div class="sec-h top"><h3>Patrimoine</h3><a routerLink="/app/immeubles">Tout voir</a></div>
+  <div class="patri">
+    @for (im of immeubles(); track im.id) {
+      <a class="imcard" [routerLink]="['/app/immeubles', im.id]">
+        @if (cover(im); as c) { <img [src]="c" alt=""/> } @else { <div class="noimg">🏢</div> }
+        <div class="ov"><div class="nm">{{ im.nom }}</div><div class="vl">{{ im.ville }}</div></div>
+      </a>
+    }
+  </div>
+}

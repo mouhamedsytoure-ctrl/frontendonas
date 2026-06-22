@@ -1,1 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --ink: #17312C;
+  --ink2: #244039;
+  --gold: #C68A30;
+  --bg: #ECEDE7;
+  --line: #E2E4DC;
+  --muted: #6E7B74;
+  --ok: #2E7D5B;
+  --warn: #C9842B;
+  --bad: #B23A3A;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+
+.btn {
+  border: none; cursor: pointer; border-radius: 10px; padding: 12px 18px;
+  font-size: 15px; font-weight: 600; transition: opacity .15s;
+}
+.btn:hover { opacity: .92; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn-ink { background: var(--ink); color: #fff; }
+.btn-gold { background: var(--gold); color: var(--ink); }
+
+.card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+
+.input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 10px; font-size: 15px; outline: none; background: #fff;
+}
+.input:focus { border-color: var(--gold); }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }

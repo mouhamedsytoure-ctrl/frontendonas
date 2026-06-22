@@ -1,0 +1,31 @@
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="open()">
+    <a class="brandbox" routerLink="/apropos" title="A propos"><img [src]="logo" alt="SITS"/></a>
+    <nav>
+      @for (m of visibleMenu(); track m.path) {
+        <a [routerLink]="m.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: m.path === '/app' }" (click)="open.set(false)">
+          <span class="ic">{{ m.icon }}</span> {{ m.label }}
+        </a>
+      }
+    </nav>
+    <div class="userbox">
+      <div class="uname">{{ auth.user()?.name }}</div>
+      <div class="urole">{{ roleLabel() }}</div>
+      <button class="btn btn-gold full" (click)="logout()">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Zone principale -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" (click)="open.set(!open())">☰</button>
+      <span class="ttl">Toursen Immobilier</span>
+    </header>
+    <div class="page">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  @if (open()) { <div class="overlay" (click)="open.set(false)"></div> }
+</div>
