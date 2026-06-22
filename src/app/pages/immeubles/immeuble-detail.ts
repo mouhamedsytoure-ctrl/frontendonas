@@ -1,5 +1,6 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -9,7 +10,7 @@ import { AuthService } from '../../core/auth.service';
 @Component({
   selector: 'app-immeuble-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   template: `
     <a routerLink="/app/immeubles" class="back">← Immeubles</a>
     @if (loading()) { <p class="muted">Chargement...</p> }
@@ -45,7 +46,7 @@ import { AuthService } from '../../core/auth.service';
         </div>
       }
 
-      <h3>Étages & logements</h3>
+      <div class="lgh"><h3>Étages & logements</h3>@if (admin()) { <button class="addlg" (click)="ouvrirLg()">+ Ajouter un appartement</button> }</div>
       @for (et of etages(); track et) {
         <div class="card et">
           <div class="ettitle">{{ etageLabel(et) }}</div>
@@ -68,6 +69,33 @@ import { AuthService } from '../../core/auth.service';
         </div>
       }
 
+      @if (modalLg()) {
+        <div class="modal" (click)="modalLg.set(false)">
+          <div class="sheet" (click)="$event.stopPropagation()" style="max-width:440px">
+            <div class="sheet-h"><b>Nouvel appartement</b><button class="close" (click)="modalLg.set(false)">✕</button></div>
+            <div class="lgform">
+              <label>Référence *</label><input [(ngModel)]="lgRef" placeholder="Ex: A1, RDC-2..." />
+              <label>Étage (0 = RDC) *</label><input type="number" [(ngModel)]="lgEtage" placeholder="0" />
+              <label>Type *</label>
+              <select [(ngModel)]="lgType">
+                <option value="appartement">Appartement</option>
+                <option value="studio">Studio</option>
+                <option value="mini_studio">Mini studio</option>
+                <option value="local_commercial">Local commercial</option>
+              </select>
+              <label>Loyer (FCFA) *</label><input type="number" [(ngModel)]="lgLoyer" placeholder="125000" />
+              <label>Statut</label>
+              <select [(ngModel)]="lgStatut">
+                <option value="disponible">Disponible</option>
+                <option value="loue">Loué</option>
+                <option value="indisponible">Indisponible</option>
+              </select>
+              @if (errLg()) { <div class="errm">{{ errLg() }}</div> }
+              <button class="btn gold" [disabled]="up()" (click)="creerLg()">Créer l'appartement</button>
+            </div>
+          </div>
+        </div>
+      }
       @if (gallery(); as g) {
         <div class="modal" (click)="gallery.set(null)">
           <div class="sheet" (click)="$event.stopPropagation()">
@@ -130,6 +158,14 @@ import { AuthService } from '../../core/auth.service';
     .gal img{width:200px;height:140px;object-fit:cover;border-radius:10px;cursor:pointer}
     .zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
     .zoom img{max-width:100%;max-height:100%;border-radius:8px}
+    .lgh{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+    .addlg{background:var(--gold);color:var(--ink);border:none;border-radius:9px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer}
+    .lgform{display:flex;flex-direction:column;gap:4px}
+    .lgform label{font-size:11px;color:var(--muted);margin-top:6px}
+    .lgform input,.lgform select{border:1px solid var(--line);border-radius:9px;padding:10px;font-size:14px;font-family:inherit}
+    .lgform .btn{margin-top:12px}
+    .btn.gold{background:var(--gold);color:var(--ink);border:none;border-radius:10px;padding:12px;font-weight:800;cursor:pointer}
+    .errm{color:var(--bad);font-size:13px;margin-top:6px}
     @media(max-width:560px){ .ph img{width:46%;height:90px} .gal img{width:46%} }
   `],
 })
@@ -173,6 +209,26 @@ export class ImmeubleDetail implements OnInit {
   galTitre() { return this._galTitre; }
   galId() { return this._galId; }
   addGalleryPhoto() { if (this._galId != null) this.pick('image/*', 'logement', this._galId); }
+
+  // --- creation d'appartement ---
+  modalLg = signal(false);
+  errLg = signal<string | null>(null);
+  lgRef = ''; lgEtage = 0; lgType = 'appartement'; lgLoyer: number | null = null; lgStatut = 'disponible';
+  ouvrirLg() { this.errLg.set(null); this.lgRef = ''; this.lgEtage = 0; this.lgType = 'appartement'; this.lgLoyer = null; this.lgStatut = 'disponible'; this.modalLg.set(true); }
+  async creerLg() {
+    if (!this.lgRef.trim()) { this.errLg.set('Indique une référence.'); return; }
+    if (this.lgLoyer == null) { this.errLg.set('Indique le loyer.'); return; }
+    this.up.set(true);
+    try {
+      await firstValueFrom(this.http.post(environment.apiUrl + '/logements', {
+        immeuble_id: this.im().id, reference: this.lgRef, etage: Number(this.lgEtage) || 0,
+        type: this.lgType, loyer: this.lgLoyer, statut: this.lgStatut,
+      }));
+      this.modalLg.set(false);
+      await this.reload();
+    } catch (e: any) { this.errLg.set(e?.error?.message || 'Création impossible.'); }
+    finally { this.up.set(false); }
+  }
   zoom(u: string) { this.big.set(u); }
 
   // --- upload / suppression / couverture ---
