@@ -14,11 +14,17 @@ import { Api, fcfa } from '../../core/api.service';
       <a class="lien" routerLink="/login">Connexion</a>
     </header>
 
+    <!-- Fond vidéo floutée pleine page -->
+    @if (video(); as v) {
+      <video class="bg-video" [src]="v" autoplay muted loop playsinline></video>
+    }
+    <div class="bg-overlay"></div>
+
     @if (loading()) { <p class="muted pad">Chargement...</p> }
     @else if (im(); as m) {
-      <div class="hero">
-        @if (video(); as v) { <video [src]="v" autoplay muted loop playsinline></video> }
-        <div class="hov"><h1>{{ m.nom }}</h1><div class="vl">{{ m.ville }}</div></div>
+      <div class="hero-title">
+        <h1>{{ m.nom }}</h1>
+        <div class="vl">{{ m.ville }}</div>
       </div>
 
       <div class="wrap">
@@ -64,29 +70,35 @@ import { Api, fcfa } from '../../core/api.service';
     }
   `,
   styles: [`
-    :host{display:block;min-height:100vh;background:var(--bg)}
-    .top{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:#fff;padding:12px 18px}
+    :host{display:block;min-height:100vh;position:relative}
+    /* --- fond vidéo floutée --- */
+    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(3px);transform:scale(1.04);z-index:0}
+    .bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1}
+    /* --- header --- */
+    .top{position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);color:#fff;padding:12px 18px}
     .back{color:#fff;text-decoration:none;font-size:22px} .lien{color:var(--gold);text-decoration:none;font-weight:600}
     .brandbox{background:#fff;border-radius:8px;padding:5px 10px}.brandbox img{height:24px;display:block}
-    .pad{padding:24px}
-    .hero{position:relative;height:240px;background:var(--ink);overflow:hidden}
-    .hero video{width:100%;height:100%;object-fit:cover}
-    .hov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.6))}
-    .hov h1{color:#fff;margin:0} .vl{color:#cfe0d9}
-    .wrap{max-width:900px;margin:0 auto;padding:18px 16px}
-    h2{color:var(--ink)} .muted{color:var(--muted)}
+    /* --- titre immeuble --- */
+    .hero-title{position:relative;z-index:10;padding:32px 18px 20px;text-align:center}
+    .hero-title h1{color:#fff;font-size:28px;margin:0 0 4px;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+    .vl{color:#cfe0d9;font-size:15px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+    /* --- contenu --- */
+    .pad{position:relative;z-index:10;padding:24px;color:#fff}
+    .muted{color:#cfe0d9}
+    .wrap{position:relative;z-index:10;max-width:900px;margin:0 auto;padding:0 16px 32px}
+    h2{color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}
     .ph{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
     .ph img{width:150px;height:100px;object-fit:cover;border-radius:12px;cursor:pointer}
-    .etage{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-    .et-t{font-weight:bold;color:var(--ink);margin-bottom:8px}
-    .lg{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+    .etage{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:14px;margin-bottom:12px}
+    .et-t{font-weight:bold;color:#fff;margin-bottom:8px}
+    .lg{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.15);cursor:pointer}
     .lg:first-of-type{border-top:none}
     .lg:hover{opacity:.85}
-    .l1{font-weight:600;color:var(--ink)} .l2{color:var(--ink)}
+    .l1{font-weight:600;color:#fff} .l2{color:#cfe0d9}
     .r{display:flex;align-items:center;gap:10px}
     .badge{background:#E7F1EC;color:var(--ok);font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
-    .photos-n{color:var(--muted);font-size:13px}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+    .photos-n{color:#cfe0d9;font-size:13px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
     .sheet{background:#fff;border-radius:14px;max-width:760px;width:100%;max-height:85vh;overflow:auto;padding:18px}
     .sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .sheet-h button{border:none;background:none;font-size:18px;cursor:pointer}
