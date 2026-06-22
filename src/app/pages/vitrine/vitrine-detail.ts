@@ -144,7 +144,7 @@ export class VitrineDetail implements OnInit {
   etages(): number[] { const s = new Set<number>(); this.disponibles().forEach((l: any) => s.add(l.etage ?? 0)); return [...s].sort((a, b) => a - b); }
   logementsOf(e: number): any[] { return this.disponibles().filter((l: any) => (l.etage ?? 0) === e); }
   etageLabel(e: number) { return e === 0 ? 'Rez-de-chaussée' : (e === 1 ? '1er étage' : e + 'e étage'); }
-  tel(): string | null { const im = this.im(); return im?.user?.telephone ?? im?.proprietaire?.telephone ?? null; }
+  tel(): string | null { return this.im()?.creator?.telephone ?? null; }
   ouvrir(l: any) { this._galTitre = `${l.type} ${l.reference}`; this.gallery.set(this.lgPhotos(l).map((p: any) => p.url)); }
   galTitre() { return this._galTitre; }
   zoom(u: string) { this.big.set(u); }
