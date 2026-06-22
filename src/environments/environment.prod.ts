@@ -1,4 +1,3 @@
 export const environment = {
-  // API Laravel (meme IP que le mobile). Pour le PC seul tu peux mettre http://localhost:8000
-  apiUrl: 'http://192.168.0.103:8000/api',
+  apiUrl: 'https://web-production-90e5b.up.railway.app/api',
 };
