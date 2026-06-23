@@ -1,14 +1,18 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
   selector: 'app-locataires',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   template: `
-    <h1 class="ptitle">Locataires</h1>
+    <div class="head">
+      <h1 class="ptitle">Locataires</h1>
+      @if (admin()) { <a class="btn-add" routerLink="/app/contrats/nouveau">+ Nouveau locataire</a> }
+    </div>
     <input class="input search" placeholder="Rechercher par nom..." [(ngModel)]="q" />
     @if (loading()) { <p class="muted">Chargement...</p> }
     @else if (filtered().length === 0) { <p class="muted">Aucun locataire.</p> }
@@ -26,7 +30,9 @@ import { Api } from '../../core/api.service';
     }
   `,
   styles: [`
-    .ptitle{color:var(--ink);margin:0 0 14px}
+    .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .ptitle{color:var(--ink);margin:0}
+    .btn-add{background:var(--gold);color:var(--ink);border-radius:10px;padding:10px 16px;font-weight:700;font-size:13px;text-decoration:none}
     .search{margin-bottom:14px;max-width:420px}
     .muted{color:var(--muted)}
     .row{display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer}
@@ -40,7 +46,8 @@ export class Locataires implements OnInit {
   items = signal<any[]>([]);
   loading = signal(true);
   q = '';
-  constructor(private api: Api, private router: Router) {}
+  constructor(private api: Api, private router: Router, private auth: AuthService) {}
+  admin() { const r = this.auth.role(); return r === 'admin' || r === 'super_admin'; }
   async ngOnInit() {
     try { this.items.set(await this.api.get('/locataires')); }
     finally { this.loading.set(false); }
