@@ -1,3 +1,3 @@
 export const environment = {
-  apiUrl: 'https://web-production-90e5b.up.railway.app/api',
+  apiUrl: 'http://192.168.0.103:8000/api',
 };
